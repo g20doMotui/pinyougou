@@ -15,162 +15,14 @@
     <!-- 分页插件 -->
     <script src="../plugins/angularjs/pagination.js"></script>
 	<link rel="stylesheet" href="../plugins/angularjs/pagination.css">
-
-    <script type="text/javascript">
-   
-    	// 创建一个模块
-    	var app = angular.module("pinyougou",["pagination"]);//定义品优购模块，引入分页模块
-    	
-    	// 品牌服务层
-    	app.service("brandService",function($http){
-    		
-    		// 查询所有品牌
-    		this.findAll=function(){
-    			return $http.get("../brand/findAll.do");
-    		}
-    		
-    		// 添加品牌
-    		this.add=function(entity){
-    			return $http.post("../brand/add.do",entity);
-    		}
-    		
-    		// 修改品牌
-    		this.update=function(entity){
-    			return $http.post("../brand/update.do",entity);
-    		}
-    		
-    		// 通过id查找用户
-    		this.findOne=function(id){
-    			return $http.get("../brand/findOne.do?id="+id);
-    		}
-    		
-    		// 批量删除
-    		this.dele=function(selectIds){
-    			return $http.get("../brand/delete.do?ids="+selectIds);
-    		}
-    		
-    		// 条件搜索
-    		this.search=function(page,size,searchEntity){
-    			return $http.post("../brand/search.do?page="+page+"&size="+size,searchEntity)
-    		}
-    		
-    	})
-    	
-    	// 创建品牌控制器
-    	app.controller("brandController",function($scope, brandService){
-    		// 查询所有品牌
-    		$scope.findAll=function(){
-    			brandService.findAll.success(
-    				function(response){
-    					$scope.list=response;
-    			});
-       		};
-       		
-       		// 分页控件配置
-       		$scope.paginationConf={
-       			currentPage:1,// 当前页
-       			totalItems:10,// 总记录数
-       			itemsPerPage:10,// 每页的记录数
-       			perPageOptions:[10,20,30,40,50],// 分页选项
-       			onChange:function(){
-       				$scope.reloadList();
-       			}
-       		}
-       		
-       		// 重新发送当前页码和每页的记录数到后台请求数据
-       		$scope.reloadList=function(){
-       			$scope.search($scope.paginationConf.currentPage, $scope.paginationConf.itemsPerPage);
-       		}
-       		
-       		/* // 请求后端分页数据(已被search方法代替)
-       		$scope.findPage=function(page, size){
-       			$http.get("../brand/findPage.do?page="+page+"&size="+size).success(
-       				function(pageResult){
-       					$scope.brandList=pageResult.rows;
-       					$scope.paginationConf.totalItems=pageResult.total;
-       				}		
-       			
-       			);
-       			
-       		}  */
-       		
-       		// 添加品牌和修改品牌
-       		$scope.save=function(){
-       			var object = null;
-       			if($scope.brand.id!=null){
-       				object=brandService.update;
-       			}else{
-       				object=brandService.add;
-       			}
-       			object.success(
-       				function(response){
-       					if(response.success){
-       						$scope.reloadList();
-       					}else{
-       						alert(response.message);
-       					}
-       				}		
-       			
-       			);
-       		}
-       		
-       		// 通过id查找用户
-       		$scope.findOne=function(id){
-       			brandService.findOne.success(
-       				function(response){
-       					$scope.brand=response;
-       				}		
-       			)
-       			
-       		}
-       		// 定义一个id数组
-       		$scope.selectIds=[];
-       		
-       		// 通过checkbox的选定状态给数组添加或删除id
-       		$scope.updateSelection=function($event, id){
-       			if($event.target.checked){// 复选框为选定状态
-       				$scope.selectIds.push(id);
-       			}else{
-       				var index = $scope.selectIds.indexOf(id);
-       				$scope.selectIds.splice(index, 1);// index代表在数组中的位置，1代表的是删除的个数
-       				
-       			}
-       		}
-       		
-       		// 批量删除
-    		$scope.dele=function(){
-    			brandService.dele.success(
-       				function(response){
-       					if(response.success){
-       						$scope.reloadList();
-       						$scope.selectIds=[];
-       					}else{
-       						alert(response.message);
-       					}
-       				}		
-       			);
-       			
-       		}
-       		
-       		// 定义搜索对象
-       		$scope.searchBrand={};
-       		
-       		// 定义搜索方法
-       		$scope.search=function(page,size){
-       			brandService.search.success(
-       				function(response){
-       					$scope.brandList=response.rows;
-       					$scope.paginationConf.totalItems=response.total;
-       				}		
-       			
-       			)
-       		}
-    		
-    		
-    		
-    	});
-    
-    </script>
+	
+	<!-- 引入基础层模块 -->
+	<script src="../js/base_pagination.js"></script>
+	<!-- 引入控制层 -->
+	<script src="../js/controller/baseController.js"></script>
+	<script src="../js/controller/brandController.js"></script>
+	<!-- 引入服务层 -->
+    <script src="../js/service/brandService.js"></script>
 
     
 </head>
@@ -190,7 +42,7 @@
                             <div class="pull-left">
                                 <div class="form-group form-inline">
                                     <div class="btn-group">
-                                        <button ng-click="brand={}" type="button" class="btn btn-default" title="新建" data-toggle="modal" data-target="#editModal" ><i class="fa fa-file-o"></i> 新建</button>
+                                        <button ng-click="entity={}" type="button" class="btn btn-default" title="新建" data-toggle="modal" data-target="#editModal" ><i class="fa fa-file-o"></i> 新建</button>
                                         <button ng-click="dele()" type="button" class="btn btn-default" title="删除" ><i class="fa fa-trash-o"></i> 删除</button>           
                                         <button type="button" class="btn btn-default" title="刷新" onclick="window.location.reload();"><i class="fa fa-refresh"></i> 刷新</button>
                                     </div>
@@ -256,11 +108,11 @@
 			<table class="table table-bordered table-striped"  width="800px">
 		      	<tr>
 		      		<td>品牌名称</td>
-		      		<td><input  class="form-control" placeholder="品牌名称" ng-model="brand.name">  </td>
+		      		<td><input  class="form-control" placeholder="品牌名称" ng-model="entity.name">  </td>
 		      	</tr>		      	
 		      	<tr>
 		      		<td>首字母</td>
-		      		<td><input  class="form-control" placeholder="首字母" ng-model="brand.firstChar">  </td>
+		      		<td><input  class="form-control" placeholder="首字母" ng-model="entity.firstChar">  </td>
 		      	</tr>		      	
 			 </table>				
 		</div>
