@@ -1,5 +1,5 @@
  //控制层 
-app.controller('goodsController' ,function($scope,$controller   ,goodsService){	
+app.controller('goodsController' ,function($scope,$controller,itemCatService,goodsService){
 	
 	$controller('baseController',{$scope:$scope});//继承
 	
@@ -76,5 +76,38 @@ app.controller('goodsController' ,function($scope,$controller   ,goodsService){
 			}			
 		);
 	}
-    
+
+
+    // 定义商品审核状态数组用于页面显示
+    $scope.status=["未审核","审核通过","审核未通过","关闭"];
+
+    // 定义商品分类数组
+    $scope.itemCatList=[];
+    // 查询所有商品分类列表
+    $scope.findItemCatList=function(){
+        itemCatService.findAll().success(
+            function(response){
+                for (var i=0;i<response.length;i++){
+                    $scope.itemCatList[response[i].id]=response[i].name;
+                }
+            }
+        )
+    }
+
+
+    // 更新审核状态
+	$scope.updateStatus=function(status){
+    	goodsService.updateStatus($scope.selectIds,status).success(
+    		function(response){
+    			if(response.success){
+    				$scope.reloadList();
+    				$scope.selectIds=[];
+				}else{
+    				alert(response.message);
+				}
+			}
+		)
+	}
+
+
 });	
